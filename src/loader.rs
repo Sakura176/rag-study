@@ -113,4 +113,10 @@ mod tests {
             assert_eq!(chunk.content.trim(), expected_text.trim());
         }
     }
+
+    #[test]
+    fn test_not_found_pdf() {
+        let chunk = load_pdf(Path::new("/nonexistent/test.pdf"));
+        assert!(chunk.is_ok());
+    }
 }
