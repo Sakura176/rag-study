@@ -1,5 +1,9 @@
 # Code Review: loader.rs & splitter.rs
 
+> **状态：全部问题已修复 (2026-05-26)**
+>
+> 以下 P0/P1/P2 问题已在 Phase 0a 收尾中解决。保留本文档作为评审记录和学习参考。
+
 ## 概述
 
 对 Phase 0a 中已实现的 `load_pdf`（`loader.rs`）和 `Splitter`（`splitter.rs`）进行代码评审。当前项目状态：核心类型已定义，PDF 加载和文本分块已有初版实现，CLI 入口尚未接入。

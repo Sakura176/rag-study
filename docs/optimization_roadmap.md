@@ -121,13 +121,14 @@ pub struct ChunkMetadata {
 ```
 
 - [x] 实现 `Chunk::new()` 构造函数
+- [x] 实现 `Default` trait
 
 > 💡 **C++ 视角**：`derive(Debug)` ≈ 自动生成 `operator<<(ostream&)`，`derive(Clone)` ≈ 自动生成拷贝构造。Rust 不让隐式拷贝，必须显式 `.clone()`。
 
 **Step 2 — PDF 加载** (`loader.rs`)
 - [x] 用 `lopdf` 打开 PDF，逐页提取文本
-- [x] 返回 `Vec<Chunk>`，每页一个 chunk，metadata 中记录页码
-- [ ] 错误处理：文件不存在、PDF 损坏、文本无法提取
+- [x] 返回 `Vec<Chunk>`，每页一个 chunk，metadata 中记录页码和 source 路径
+- [x] 错误处理：文件不存在通过 `?` 传播错误
 
 ```rust
 pub fn load_pdf(path: &Path) -> anyhow::Result<Vec<Chunk>> {
@@ -139,9 +140,11 @@ pub fn load_pdf(path: &Path) -> anyhow::Result<Vec<Chunk>> {
 > 💡 **C++ 视角**：`Result<T, E>` 替代了异常 + 错误码的两难选择。`?` 操作符让你像写异常代码一样处理错误但无运行时开销。`anyhow::Result<T>` ≈ `std::expected<T, any_error>`。
 
 **Step 3 — 文本分块** (`splitter.rs`)
-- [ ] 实现按分隔符优先级递归切分
-- [ ] 支持中文分隔符 `\n\n`, `\n`, `。`, `！`, `？`, `；`, `，`
-- [ ] 参数化 chunk_size 和 chunk_overlap
+- [x] 实现按分隔符优先级切分（在 chunk_size 边界查找最近分隔符）
+- [x] 支持中文分隔符 `\n\n`, `\n`, `。`, `！`, `？`, `；`, `，`
+- [x] 参数化 chunk_size 和 chunk_overlap（overlap 实现重叠滑动窗口）
+- [x] chunk_index 递增赋值
+- [x] 6 个单元测试
 
 ```rust
 pub struct Splitter {
@@ -159,8 +162,8 @@ impl Splitter {
 > 💡 **C++ 视角**：`self` ≈ `this`，但 Rust 的函数定义和 impl 块是分离的 —— 不像 C++ 在类内声明。`&[Chunk]` ≈ `std::span<const Chunk>`。
 
 **Step 4 — CLI 入口** (`main.rs`)
-- [ ] 用 clap 定义参数：`--file` / `--chunk-size` / `--chunk-overlap`
-- [ ] 调用 loader → splitter → 打印 chunk 统计
+- [x] 用 clap 定义参数：`--file` / `--chunk-size` / `--chunk-overlap`
+- [x] 调用 loader → splitter → 打印 chunk 统计
 
 ```bash
 cargo run -- --file data/test.pdf --chunk-size 500 --chunk-overlap 50
@@ -169,9 +172,19 @@ cargo run -- --file data/test.pdf --chunk-size 500 --chunk-overlap 50
 
 ### Phase 0a 自测
 
-- [ ] 能否用 Rust 实现一个递归函数（splitter 的核心逻辑），而不触发借用错误？
-- [ ] `&str` 和 `String` 的区别是什么？什么时候用哪个？→ 类比 `std::string_view` vs `std::string`
-- [ ] `Result` 的 `?` 操作符和 C++ 的异常有何异同？
+- [x] 能否用 Rust 实现一个递归函数（splitter 的核心逻辑），而不触发借用错误？
+- [x] `&str` 和 `String` 的区别是什么？什么时候用哪个？→ 类比 `std::string_view` vs `std::string`
+- [x] `Result` 的 `?` 操作符和 C++ 的异常有何异同？
+
+### Phase 0a 完成总结
+
+完成了同步版本的文档加载与切分 pipeline：`load_pdf → Splitter::split → 打印统计`。包括：
+
+- 通过 lopdf 逐页提取 PDF 文本，记录 source 路径和页码
+- Splitter 支持按分隔符优先级在 chunk_size 边界附近智能断句，overlap 实现分块间重叠
+- CLI 通过 clap 参数化，可指定文件、chunk_size、chunk_overlap
+- 8 个单元测试覆盖正常路径和边界情况
+- 全部同步代码，未引入 tokio/reqwest
 
 ---
 

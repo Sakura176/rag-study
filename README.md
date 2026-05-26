@@ -13,13 +13,14 @@
 
 ```
 src/
-├── main.rs       # 入口（CLI）
+├── main.rs       # CLI 入口（clap: --file/--chunk-size/--chunk-overlap）
 ├── lib.rs        # 公共模块导出
 ├── types.rs      # Chunk, ChunkMetadata 等核心类型
-├── loader.rs     # PDF 加载（当前: lopdf 逐页提取文本）
-└── splitter.rs   # 文本分块（当前: 按 chunk_size 切分）
+├── loader.rs     # PDF 加载（lopdf 逐页提取文本）
+└── splitter.rs   # 文本分块（按分隔符优先切分 + overlap 重叠）
 docs/
-└── optimization_roadmap.md  # 完整学习路线图
+├── optimization_roadmap.md  # 完整学习路线图
+└── code_review.md           # Phase 0a 代码评审记录
 ```
 
 ## 路线图
@@ -55,7 +56,7 @@ cargo fmt
 
 ## 当前进度
 
-Phase 0a 进行中：核心类型、PDF 加载、文本切分已实现，CLI 入口待接入。
+Phase 0a 已完成：核心类型、PDF 加载（含 source 路径记录）、文本切分（分隔符优先 + overlap）、CLI 入口均已实现，带 8 个单元测试。下一阶段：Phase 0b（异步 HTTP + DeepSeek API）。
 
 ## 设计原则
 

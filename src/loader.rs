@@ -11,8 +11,9 @@ pub fn load_pdf(path: &Path) -> Result<Vec<Chunk>, Box<dyn std::error::Error>> {
     // 遍历页码（1-based）而不是索引
     for (page_num, _) in doc.get_pages() {
         let mut chunk = Chunk::new();
-        chunk.metadata.page = Some(page_num); // 保存实际的页码
-        chunk.content = doc.extract_text(&[page_num])?; // 使用 ? 而不是 unwrap
+        chunk.metadata.source = path.to_string_lossy().to_string();
+        chunk.metadata.page = Some(page_num);
+        chunk.content = doc.extract_text(&[page_num])?;
         chunks.push(chunk);
     }
 
@@ -117,6 +118,6 @@ mod tests {
     #[test]
     fn test_not_found_pdf() {
         let chunk = load_pdf(Path::new("/nonexistent/test.pdf"));
-        assert!(chunk.is_ok());
+        assert!(chunk.is_err());
     }
 }
